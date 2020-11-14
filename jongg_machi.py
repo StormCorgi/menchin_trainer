@@ -1,7 +1,7 @@
 # definition
-import collections
+# import collections
 import copy
-import random
+# import random
 
 
 def serialize_tiles(tiles):
@@ -16,7 +16,7 @@ def deserialize_tiles(s_tiles):
     # 1-9牌カウント ex.[0,1,2,0,0,0,0,0,0] => [2,3,3]
     tiles = []
     for i in range(9):
-        for j in range(s_tiles[i]):
+        for _ in range(s_tiles[i]):
             tiles.append(i + 1)
     return tiles
 

@@ -3,74 +3,73 @@ import cv2
 import jongg_machi as jm
 
 
-def is_tehai_valid(tehai):
+def is_tehai_valid(target_hand):
+    """validate array, mahjong use same 4 pi. not 5 or 6...
+    """
     for i in supai:
-        if tehai.count(i) > 4:
+        if target_hand.count(i) > 4:
             return False
     return True
 
 
-def gen_tehai():
-    tehai = [0]*7
+def gen_tehai(gen_hand):
+    """gen_tehai inputs 7 length array, and return mahjong hand (random)
+    """
     for i in range(7):
-        tehai[i] = supai[random.randint(0, len(supai)-1)]
-    while is_tehai_valid(tehai) is False:
-        tehai = gen_tehai()
+        gen_hand[i] = supai[random.randint(0, len(supai)-1)]
+    while is_tehai_valid(gen_hand) is False:
+        gen_hand = gen_tehai(gen_hand)
     return tehai
+
+
+def gen_hand_pict(hands, is_sorted):
+    """input hand, sorted(bool), and generate image file.
+    """
+    for i, hand in enumerate(hands):
+        tmp_img = cv2.imread('./pai-images/' + pisyu +
+                             str(hand) + FILENAMESUFFIX)
+        # flip 50%
+        if is_sorted is False and random.randint(0, 1) == 1:
+            tmp_img = cv2.flip(tmp_img, -1)
+
+        # write image
+        if i == 0:
+            paisi = tmp_img
+        else:
+            paisi = cv2.hconcat([paisi, tmp_img])
+
+    if is_sorted is True:
+        cv2.imwrite('./ripi.jpg', paisi)
+    else:
+        cv2.imwrite('./question.jpg', paisi)
 
 
 # main
 supai = [3, 4, 5, 6, 7]
 all_pisyu = ["man", "pin", "sou"]
 pisyu = all_pisyu[random.randint(0, 2)]
-filename_suffix = "-66-90-l.png"
+FILENAMESUFFIX = "-66-90-l.png"
 
-tehai = gen_tehai()
+tehai = [0]*7
+gen_tehai(tehai)
 print(tehai)
 
-
-paisi = None
-ripi_paisi = None
-
 # 問題用の牌姿
-for i in range(len(tehai)):
-    tmp_img = cv2.imread('./pai-images/' + pisyu +
-                         str(tehai[i]) + '-66-90-l.png')
-    # flip 50%
-    if random.randint(0, 1) == 1:
-        tmp_img = cv2.flip(tmp_img, -1)
-    # write image
-    if i == 0:
-        paisi = tmp_img
-    else:
-        paisi = cv2.hconcat([paisi, tmp_img])
-
-cv2.imwrite('./question.jpg', paisi)
-
-
+gen_hand_pict(tehai, False)
 # 回答用の牌姿
 tehai.sort()
-for i in range(len(tehai)):
-    tmp_img = cv2.imread('./pai-images/' + pisyu +
-                         str(tehai[i]) + '-66-90-l.png')
-    # write image
-    if i == 0:
-        ripi_paisi = tmp_img
-    else:
-        ripi_paisi = cv2.hconcat([ripi_paisi, tmp_img])
+gen_hand_pict(tehai, True)
 
-cv2.imwrite('./ripi.jpg', ripi_paisi)
 print(tehai)
 machi = jm.hola_finder(tehai)
 print(machi)
 
 if len(machi) == 0:
-    str = "ノーテン"
+    STR = "ノーテン"
 else:
     strcast = map(str, machi)
-    str = ','.join(strcast)
-    str += "待ち"
+    STR = ','.join(strcast)
+    STR += "待ち"
 
 with open('answer.txt', 'w', encoding="utf-8") as f:
-    f.write(str)
-
+    f.write(STR)
